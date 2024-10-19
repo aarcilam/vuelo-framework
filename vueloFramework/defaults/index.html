@@ -19,7 +19,7 @@
         elements.forEach(async (element) => {
           const componentName = element.getAttribute("data-hydrate");
           if (!componentName) return;
-
+          element.innerHTML = "the hydratation goes here";
           console.log("hydrated :",componentName);
         });
       }
