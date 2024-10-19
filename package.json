@@ -3,12 +3,16 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch index.ts"
+    "dev": "bun run --watch index.ts",
+    "build": "bun build"
   },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "vue": "^3.5.12"
   }
 }
