@@ -3,6 +3,7 @@ import { createVueloApp } from "../createVueloApp";
 import { resolveRouteComponent } from "../router";
 import getTemplate from "../utils/template";
 import type { VueloConfig } from "../interfaces/vueloConfig";
+import { createIslandRoutes } from "../createIslandsRoutes";
 
 export default function BunServer(
   vite: ViteDevServer,
@@ -13,13 +14,13 @@ export default function BunServer(
     async fetch(req) {
       const url = new URL(req.url);
       //handres islands pages
-      console.log(components.islands);
+      createIslandRoutes(vite, url, components.islands);
       // handre front end pages
       try {
         let template = getTemplate();
         const rcomponent = resolveRouteComponent(
           components.pages,
-          url.pathname,
+          url,
         );
         const appHtml = await createVueloApp(vite, rcomponent);
         const html = template.replace(`<!--vuelo-app-html-->`, appHtml);

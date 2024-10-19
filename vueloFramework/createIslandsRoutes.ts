@@ -1,5 +1,8 @@
+export function createIslandRoutes(vite: any, url: URL, islands: any[]) {
+  islands.forEach((island) => {
+    const name = "/api/islands/" + island.name;
+    console.log(url.pathname, name);
 
-
-export async function createIslandRoutes(vite: any, component: any) {
-
+    if (url.pathname == name) return new Response(name);
+  });
 }

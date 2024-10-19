@@ -31,7 +31,7 @@
             try {
               // Realizar la solicitud al servidor para obtener el código del componente
               const response = await fetch(
-                `/api/components/${componentName.toLocaleLowerCase()}`,
+                `/api/islands/${componentName.toLocaleLowerCase()}`,
               );
               if (!response.ok) throw new Error("Network response was not ok");
 
