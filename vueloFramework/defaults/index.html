@@ -9,8 +9,9 @@
   </head>
   <body>
     <div id="app"><!--vuelo-app-html--></div>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="module">
+      import { createApp, defineComponent } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    
       export function hydrateComponents() {
         const elements = document.querySelectorAll("[data-hydrate]");
     
@@ -20,14 +21,31 @@
     
           if (!componentName || !eventType) return;
     
-          const hydrate = () => {
-            element.innerHTML = "the hydration goes here";
-            console.log("hydrated:", componentName);
+          const hydrate = async () => {
+            try {
+              // Realizar la solicitud al servidor para obtener el código del componente
+              const response = await fetch(`/api/components/${componentName}`);
+              if (!response.ok) throw new Error('Network response was not ok');
+    
+              const componentCode = await response.text();
+              
+              // Define el componente a partir del código recibido
+              const dynamicComponent = defineComponent({
+                template: componentCode,
+              });
+    
+              // Monta el componente en el elemento
+              const app = createApp(dynamicComponent);
+              app.mount(element);
+              
+              console.log("hydrated:", componentName);
+            } catch (error) {
+              console.error('Error fetching component:', error);
+            }
           };
     
           switch (eventType) {
             case "load":
-              // Usamos 'load' en el evento window
               window.addEventListener('load', hydrate);
               break;
             case "click":
@@ -47,6 +65,7 @@
         hydrateComponents();
       });
     </script>
+    
     
   </body>
 </html>
