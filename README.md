@@ -6,6 +6,15 @@
 
 Porque tu código merece ser elevado a otro nivel. En este framework, cada componente es como un pasajero feliz en un vuelo directo a la productividad.
 
+1. **Amo Vue**: La reactividad de Vue es como un superpoder. Puedes crear interfaces de usuario interactivas sin sudar una gota. Además, su sistema de componentes es tan intuitivo que te sentirás como un maestro de ceremonias en un espectáculo de fuegos artificiales.
+
+2. **Velocidad del servidor de Bun**: Hablemos de velocidad: el servidor de Bun es **fast as f*ck**. No importa si tienes miles de solicitudes por segundo, Bun se las arregla para manejarlas como un ninja, todo mientras te mantiene en la zona de desarrollo.
+
+3. **Simplicidad**: vueloFramework combina lo mejor de Vue y la velocidad de Bun para que puedas concentrarte en lo que realmente importa: construir algo increíble sin complicaciones innecesarias.
+
+
+Así que, si quieres que tu código despegue y te lleve a lugares sorprendentes, ¡vueloFramework es tu billete de primera clase!
+
 ## Instalación de Dependencias
 
 Para que tu aventura de codificación despegue sin problemas, primero instala las dependencias.
