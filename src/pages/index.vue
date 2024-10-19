@@ -1,6 +1,8 @@
 <template>
   <div>
-    <Counter data-hydrate="Counter" ></Counter>
+    <Counter data-hydrate="Counter" data-hydrate-event="load"></Counter>
+    <Counter data-hydrate="Counter" data-hydrate-event="click"></Counter>
+    <Counter data-hydrate="Counter" data-hydrate-event="mouseover"></Counter>
   </div>
 </template>
 

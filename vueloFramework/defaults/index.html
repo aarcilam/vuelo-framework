@@ -11,22 +11,42 @@
     <div id="app"><!--vuelo-app-html--></div>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="module">
-      // import { createApp } from 'vue';
-
       export function hydrateComponents() {
         const elements = document.querySelectorAll("[data-hydrate]");
-
+    
         elements.forEach(async (element) => {
           const componentName = element.getAttribute("data-hydrate");
-          if (!componentName) return;
-          element.innerHTML = "the hydratation goes here";
-          console.log("hydrated :",componentName);
+          const eventType = element.getAttribute("data-hydrate-event");
+    
+          if (!componentName || !eventType) return;
+    
+          const hydrate = () => {
+            element.innerHTML = "the hydration goes here";
+            console.log("hydrated:", componentName);
+          };
+    
+          switch (eventType) {
+            case "load":
+              // Usamos 'load' en el evento window
+              window.addEventListener('load', hydrate);
+              break;
+            case "click":
+              element.addEventListener('click', hydrate);
+              break;
+            case "mouseover":
+              element.addEventListener('mouseover', hydrate);
+              break;
+            default:
+              console.warn(`Unknown event type: ${eventType}`);
+              break;
+          }
         });
       }
-
+    
       document.addEventListener('DOMContentLoaded', () => {
         hydrateComponents();
       });
     </script>
+    
   </body>
 </html>
