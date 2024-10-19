@@ -92,7 +92,15 @@ function generateImportMap(
         route,
       };
     }),
-    islands: islands.map((island) => `${path.basename(island, ".vue")}`),
+    islands: islands.map((island) => {
+      const name = path.basename(island, ".vue");
+      const relativePath = path.relative(__dirname, island).replace("..", "");
+
+      return {
+        name,
+        path: relativePath, // Aquí se usa la ruta relativa
+      };
+    }),
     components: components.map((component) =>
       `${path.basename(component, ".vue")}`
     ),
@@ -105,8 +113,8 @@ function generateImportMap(
   };
 }
 
-export async function pagesComponents(vite: any) {
-  const routes = (await getImports()).manifest.pages;
+export async function pagesComponents(vite: any, pages: any[]) {
+  const routes = pages;
   const components: { route: any; promise: Promise<any> }[] = []; // Almacena el objeto con la ruta y la promesa
 
   // Recopilar todas las promesas de los componentes junto con su ruta
@@ -127,4 +135,8 @@ export async function pagesComponents(vite: any) {
   }));
 
   return componentsToImport;
+}
+
+export async function islandsComponents(vite: any, islands: any) {
+  return islands;
 }

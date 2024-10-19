@@ -4,11 +4,17 @@ import { resolveRouteComponent } from "../router";
 import getTemplate from "../utils/template";
 import type { VueloConfig } from "../interfaces/vueloConfig";
 
-export default function BunServer(vite:ViteDevServer,config:VueloConfig,components:any){
-return Bun.serve({
+export default function BunServer(
+  vite: ViteDevServer,
+  config: VueloConfig,
+  components: any,
+) {
+  return Bun.serve({
     async fetch(req) {
       const url = new URL(req.url);
-
+      //handres islands pages
+      console.log(components.islands);
+      // handre front end pages
       try {
         let template = getTemplate();
         const rcomponent = resolveRouteComponent(
