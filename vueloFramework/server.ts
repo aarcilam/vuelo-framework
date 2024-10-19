@@ -7,8 +7,8 @@ export interface VueloConfig{
 }
 
 export async function start(config:VueloConfig) {
-  const autoImports = await getImports();
-  console.log(autoImports);
+  const {manifest} = await getImports();
+  console.log(manifest.pages);
   Bun.serve({
     async fetch(req) {
       const url = new URL(req.url);

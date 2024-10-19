@@ -52,9 +52,9 @@ async function getFiles(dir: string, ext: string) {
 }
 
 function generateImportMap(pages: string[], islands: string[], components: string[]) {
-  const routeImports = pages.map(route => {
-    const importName = path.basename(route, path.extname(route));
-    return `import * as $${importName} from "${route}";`;
+  const pageImports = pages.map(page => {
+    const importName = path.basename(page, path.extname(page));
+    return `import * as $${importName} from "${page}";`;
   });
 
   const islandImports = islands.map(island => {
@@ -68,14 +68,27 @@ function generateImportMap(pages: string[], islands: string[], components: strin
   });
 
   const manifest = {
-    pages: Object.fromEntries(pages.map(route => [route, `$${path.basename(route, '.tsx')}`])),
-    islands: Object.fromEntries(islands.map(island => [island, `$${path.basename(island, '.tsx')}`])),
-    components: Object.fromEntries(components.map(component => [component, `$${path.basename(component, '.tsx')}`])),
+    pages: pages.map(page => {
+        const name = path.basename(page, '.vue');
+        let route = page.replace(/^.*\/pages\//, ''); // Remover la ruta hasta 'pages/'
+        route = route.replace(/index\.vue$/, ''); // Eliminar 'index.vue'
+        route = route.replace(/\.vue$/, ''); // Eliminar '.vue' de otros archivos
+        route = route.endsWith('/') ? route.slice(0, -1) : route; // Eliminar barra final si existe
+        route = `/${route}`; // Asegurar que empiece con '/'
+      
+        return {
+          name,
+          path: page,
+          route,
+        };
+      }),
+    islands: islands.map(island => `${path.basename(island, '.vue')}`),
+    components: components.map(component => `${path.basename(component, '.vue')}`),
     baseUrl: import.meta.url,
   };
 
   return {
-    imports: [...routeImports, ...islandImports, ...componentsImports],
+    imports: [...pageImports, ...islandImports, ...componentsImports],
     manifest,
   };
 }

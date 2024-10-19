@@ -1,7 +1,6 @@
 import { start, type VueloConfig } from "./vueloFramework/server";
 
-const config:VueloConfig = {}
-start(config)
+start({})
 
 console.log("vuelo running: http://localhost:3000/");
 
