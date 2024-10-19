@@ -12,7 +12,6 @@ function getTemplate() {
     // Si no se encuentra, intenta leerlo desde la carpeta defaults
     try {
       const file = join(__dirname, "../defaults/index.html");
-      console.log("Using vuelo index");
       template = readFileSync(file, "utf-8");
     } catch (error) {
       // Maneja el error si tampoco se encuentra el archivo en defaults

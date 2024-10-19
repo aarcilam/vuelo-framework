@@ -7,7 +7,7 @@ import getTemplate from "./utils/template";
 import BunServer from "./servers/bun";
 
 export async function vuelo(config:VueloConfig = {
-  port: 3000,
+  port: 9876,
   flavor: "bun",
 }) {
   const vite = await createServer({
