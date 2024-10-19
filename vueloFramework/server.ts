@@ -1,8 +1,12 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { createVueloApp } from "./createVueloApp";
+import { createServer } from "vite";
 
 export async function start() {
+  const vite = await createServer({
+    server: { middlewareMode: true },
+  });
   Bun.serve({
     async fetch(req) {
       const url = new URL(req.url);
@@ -12,7 +16,7 @@ export async function start() {
         let template = readFileSync(resolve("index.html"), "utf-8");
 
         // Renderiza la aplicación
-        const appHtml = await createVueloApp(url.pathname);
+        const appHtml = await createVueloApp(vite,url.pathname);
 
         // Inyecta la app renderizada en el template
         const html = template.replace(`<!--app-html-->`, appHtml);

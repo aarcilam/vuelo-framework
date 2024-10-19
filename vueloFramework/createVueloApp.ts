@@ -1,16 +1,15 @@
 import { createSSRApp } from "vue";
 import { renderToString } from "vue/server-renderer";
-import { createServer as createViteServer } from "vite";
+import { resolveRouteComponent } from "./router";
 
-export async function createVueloApp(url: string) {
-  const vite = await createViteServer({
-    server: { middlewareMode: true,port: 3001 },
-  });
-
-  // Usa el método de Vite para importar App.vue y transformarlo antes de usarlo
+export async function createVueloApp(vite:any,url: string) {
   const { default: App } = await vite.ssrLoadModule("/src/App.vue");
-
+  const routeComponent = await resolveRouteComponent(vite,url);
+  console.log(routeComponent);
   const app = createSSRApp(App);
+  if (routeComponent) {
+    app.component('RouteView', routeComponent);
+  }
   try {
     const html = await renderToString(app);
     return html;

@@ -82,10 +82,13 @@ function generateImportMap(
       route = route.replace(/\.vue$/, ""); // Eliminar '.vue' de otros archivos
       route = route.endsWith("/") ? route.slice(0, -1) : route; // Eliminar barra final si existe
       route = `/${route}`; // Asegurar que empiece con '/'
-
+  
+      // Calcular la ruta relativa al directorio actual
+      const relativePath = path.relative(__dirname, page);
+  
       return {
         name,
-        path: page,
+        path: relativePath, // Aquí se usa la ruta relativa
         route,
       };
     }),
