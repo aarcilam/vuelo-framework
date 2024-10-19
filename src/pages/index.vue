@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h1>soy el index</h1>
     <Counter></Counter>
   </div>
 </template>

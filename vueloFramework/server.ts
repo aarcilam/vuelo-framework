@@ -4,40 +4,19 @@ import { pagesComponents } from "./autoImport";
 import { resolveRouteComponent } from "./router";
 import { type VueloConfig } from "./interfaces/vueloConfig";
 import getTemplate from "./utils/template";
+import BunServer from "./servers/bun";
 
 export async function vuelo(config:VueloConfig = {
   port: 3000,
   flavor: "bun",
 }) {
-  let server = Bun;
   const vite = await createServer({
     server: { middlewareMode: true },
   });
   const components = {
     pages: await pagesComponents(vite),
   };
-  server.serve({
-    async fetch(req) {
-      const url = new URL(req.url);
-
-      try {
-        let template = getTemplate();
-        const rcomponent = resolveRouteComponent(
-          components.pages,
-          url.pathname,
-        );
-        const appHtml = await createVueloApp(vite, rcomponent);
-        const html = template.replace(`<!--app-html-->`, appHtml);
-        return new Response(html, {
-          headers: { "Content-Type": "text/html" },
-        });
-      } catch (error) {
-        console.error("Error during rendering:", error);
-        return new Response("Internal Server Error", { status: 500 });
-      }
-    },
-    port: config.port,
-  });
-
-  console.log("Vuelo running on http://localhost:" + config.port);
+  const server = BunServer(vite,config,components);
+  
+  console.log("Vuelo running on "+server.url);
 }
