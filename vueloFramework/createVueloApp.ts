@@ -5,9 +5,11 @@ import { renderToString } from "vue/server-renderer";
 
 export async function createVueloApp(path: string) {
   const { app } = createApp();
-
-  const ctx = {};
-  const html = await renderToString(app, ctx);
-
-  return html;
+  try {
+    const html = await renderToString(app);
+    return html;
+  } catch (error) {
+    console.error("Error rendering app:", error);
+    return "<!-- Error rendering app -->";
+  }
 }

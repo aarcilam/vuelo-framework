@@ -1,13 +1,9 @@
 <template>
   <div>
-    <h1>Mi Aplicación</h1>
+    <h1>Bienvenido a Vuelo Framework</h1>
+    <router-view></router-view>
   </div>
 </template>
 
-<script setup>
-  // Tu lógica de Vue aquí
+<script setup lang="ts">
 </script>
-
-<style scoped>
-  /* Estilos aquí */
-</style>

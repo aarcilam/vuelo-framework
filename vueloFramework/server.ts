@@ -16,9 +16,7 @@ const routes = {
 
 export async function start(config: VueloConfig) {
   // Crear el servidor Vite
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-  });
+  const vite = await createViteServer();
   const { manifest } = await getImports();
   Bun.serve({
     async fetch(req) {
