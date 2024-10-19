@@ -16,7 +16,7 @@ export async function start() {
         let template = readFileSync(resolve("index.html"), "utf-8");
 
         // Renderiza la aplicación
-        const appHtml = await createVueloApp(vite,url.pathname);
+        const appHtml = await createVueloApp(vite, url.pathname);
 
         // Inyecta la app renderizada en el template
         const html = template.replace(`<!--app-html-->`, appHtml);

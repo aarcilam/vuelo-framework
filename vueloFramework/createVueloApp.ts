@@ -2,13 +2,13 @@ import { createSSRApp } from "vue";
 import { renderToString } from "vue/server-renderer";
 import { resolveRouteComponent } from "./router";
 
-export async function createVueloApp(vite:any,url: string) {
+export async function createVueloApp(vite: any, url: string) {
   const { default: App } = await vite.ssrLoadModule("/src/App.vue");
-  const routeComponent = await resolveRouteComponent(vite,url);
+  const routeComponent = await resolveRouteComponent(vite, url);
   console.log(routeComponent);
   const app = createSSRApp(App);
   if (routeComponent) {
-    app.component('RouteView', routeComponent);
+    app.component("RouteView", routeComponent);
   }
   try {
     const html = await renderToString(app);
