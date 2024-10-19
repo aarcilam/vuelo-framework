@@ -10,7 +10,6 @@ export async function vuelo(config:VueloConfig = {
   flavor: "bun",
 }) {
   let server = Bun;
-  if(config.flavor == "deno") server = Deno;
   const vite = await createServer({
     server: { middlewareMode: true },
   });
