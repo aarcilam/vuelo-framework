@@ -10,7 +10,7 @@
     </div>
   </template>
   
-  <script setup lang="ts">
+  <script setup>
   import { ref } from 'vue';
   
   const count = ref(0);
