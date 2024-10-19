@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Bienvenido a Vuelo Framework desde src</h1>
+    <h1>Bienvenido a Vuelo Framework</h1>
     <p>{{ message }}</p>
     <RouteView></RouteView>
   </div>

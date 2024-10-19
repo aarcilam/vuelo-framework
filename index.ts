@@ -1,3 +1,5 @@
-import { start } from "./vueloFramework/server";
+import { vuelo } from "./vueloFramework/server";
 
-start();
+vuelo({
+    port: 3000
+});

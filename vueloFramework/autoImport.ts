@@ -123,7 +123,7 @@ export async function pagesComponents(vite: any) {
   // Combinar los resultados con sus rutas
   const componentsToImport = components.map((c, index) => ({
     route: c.route,
-    component: { App: results[index].default }, // Asocia el componente resuelto con su ruta
+    component: { default: results[index].default }, // Asocia el componente resuelto con su ruta
   }));
 
   return componentsToImport;
