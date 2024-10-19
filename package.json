@@ -3,8 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch index.ts",
-    "build": "bun build"
+    "dev": "bun run index.ts",
+    "build": "bun vite build"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -13,6 +13,11 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "vue": "^3.5.12"
+    "@vitejs/plugin-vue": "^5.1.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "vite": "^5.4.9",
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5"
   }
 }

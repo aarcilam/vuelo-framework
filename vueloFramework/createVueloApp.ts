@@ -1,8 +1,13 @@
-import { createSSRApp } from 'vue';
+import { createSSRApp, h } from "vue";
+import App from "../src/App.vue";
+import { createApp } from "./main";
+import { renderToString } from "vue/server-renderer";
 
-export function createVueloApp(path:string) {
-  return createSSRApp({
-    data: () => ({ path }),
-    template: `<div><h1>Server Side Rendered Path: {{ path }}</h1></div>`,
-  });
+export async function createVueloApp(path: string) {
+  const { app } = createApp();
+
+  const ctx = {};
+  const html = await renderToString(app, ctx);
+
+  return html;
 }
