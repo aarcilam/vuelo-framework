@@ -1,9 +1,7 @@
-import { getImports } from "./autoImport";
-
-export async function resolveRouteComponent(vite: any, url: string) {
-  const routes = (await getImports()).manifest.pages;
-  const componentRoute = routes.find((route) => route.route === url);
-  const { default: App } = await vite.ssrLoadModule(componentRoute?.path.replace("..",""));
-
-  return App;
+export function resolveRouteComponent(components: any[], url: string) {
+    const route = components.find((c) => c.route.route === url); // Encuentra la ruta correspondiente
+    if (!route) {
+        return null; // Retornar null si no se encuentra la ruta
+    }
+    return route.component; // Retornar el componente si se encontró la ruta
 }
