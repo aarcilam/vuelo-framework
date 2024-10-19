@@ -1,5 +1,3 @@
-import { start, type VueloConfig } from "./vueloFramework/server";
+import { start } from "./vueloFramework/server";
 
-start({});
-
-console.log("vuelo running: http://localhost:3000/");
+start();

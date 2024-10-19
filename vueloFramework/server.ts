@@ -1,48 +1,32 @@
-import { createServer as createViteServer } from "vite";
-import { getImports } from "./autoImport";
-import Index from "../src/pages/index.vue";
-import About from "../src/pages/about/index.vue";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { createVueloApp } from "./createVueloApp";
 
-export interface VueloConfig {
-}
-
-const routes = {
-  "/": Index,
-  "/about": About,
-};
-
-export async function start(config: VueloConfig) {
-  // Crear el servidor Vite
-  const vite = await createViteServer();
-  const { manifest } = await getImports();
+export async function start() {
   Bun.serve({
     async fetch(req) {
-      const url = req.url;
+      const url = new URL(req.url);
 
       try {
-        let template;
+        // Lee el archivo `index.html`
+        let template = readFileSync(resolve("index.html"), "utf-8");
 
-        template = readFileSync(resolve("index.html"), "utf-8");
-        template = await vite.transformIndexHtml(url, template);
+        // Renderiza la aplicación
+        const appHtml = await createVueloApp(url.pathname);
 
-        const appHtml = await createVueloApp(url);
-
-        const html = template
-          .replace(`<!--app-html-->`, appHtml);
+        // Inyecta la app renderizada en el template
+        const html = template.replace(`<!--app-html-->`, appHtml);
 
         return new Response(html, {
           headers: { "Content-Type": "text/html" },
         });
-      } catch (e:any) {
-        console.log(e.stack);
-        return new Response("", {
-          headers: { "Content-Type": "text/html" },
-        });
+      } catch (error) {
+        console.error("Error during rendering:", error);
+        return new Response("Internal Server Error", { status: 500 });
       }
     },
     port: 3000,
   });
+
+  console.log("Vuelo running on http://localhost:3000/");
 }
