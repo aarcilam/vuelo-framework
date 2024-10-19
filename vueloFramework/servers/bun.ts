@@ -17,7 +17,8 @@ export default function BunServer(
         if (url.pathname.startsWith("/api/")) {
           for (const island of components.islands) {
             const name = "/api/islands/" + island.name;
-            console.log(url.pathname, name);
+            const path = island.path;
+            console.log(url.pathname, island);
   
             if (url.pathname === name) {
               return new Response(name);
