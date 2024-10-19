@@ -5,14 +5,19 @@ import { resolveRouteComponent } from "./router";
 import { type VueloConfig } from "./interfaces/vueloConfig";
 import getTemplate from "./utils/template";
 
-export async function vuelo(config:VueloConfig) {
+export async function vuelo(config:VueloConfig = {
+  port: 3000,
+  flavor: "bun",
+}) {
+  let server = Bun;
+  if(config.flavor == "deno") server = Deno;
   const vite = await createServer({
     server: { middlewareMode: true },
   });
   const components = {
     pages: await pagesComponents(vite),
   };
-  Bun.serve({
+  server.serve({
     async fetch(req) {
       const url = new URL(req.url);
 
@@ -35,5 +40,5 @@ export async function vuelo(config:VueloConfig) {
     port: config.port,
   });
 
-  console.log("Vuelo running on http://localhost:"+config.port);
+  console.log("Vuelo running on http://localhost:" + config.port);
 }

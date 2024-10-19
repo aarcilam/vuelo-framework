@@ -6,7 +6,7 @@ export async function createVueloApp(vite: any, component: any) {
   try {
     module = await vite.ssrLoadModule("src/App.vue");
   } catch (error) {
-    console.log("App.vue no found con src using default")
+    console.log("App.vue no found con src using default");
     module = await vite.ssrLoadModule("vueloFramework/defaults/App.vue");
   }
   const app = createSSRApp(module.default);

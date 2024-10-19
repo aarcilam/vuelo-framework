@@ -1,3 +1,4 @@
-export interface VueloConfig{
-    port: number
+export interface VueloConfig {
+  port?: number;
+  flavor?: "bun" | "deno";
 }
