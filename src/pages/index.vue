@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Counter></Counter>
+    <Counter data-hydrate="Counter" ></Counter>
   </div>
 </template>
 
