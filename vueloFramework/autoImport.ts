@@ -105,27 +105,26 @@ function generateImportMap(
   };
 }
 
-
 export async function pagesComponents(vite: any) {
-    const routes = (await getImports()).manifest.pages;
-    const components: { route: any; promise: Promise<any> }[] = []; // Almacena el objeto con la ruta y la promesa
+  const routes = (await getImports()).manifest.pages;
+  const components: { route: any; promise: Promise<any> }[] = []; // Almacena el objeto con la ruta y la promesa
 
-    // Recopilar todas las promesas de los componentes junto con su ruta
-    routes.forEach(componentRoute => {
-        components.push({
-            route: componentRoute,
-            promise: vite.ssrLoadModule(componentRoute.path.replace("..", ""))
-        });
+  // Recopilar todas las promesas de los componentes junto con su ruta
+  routes.forEach((componentRoute) => {
+    components.push({
+      route: componentRoute,
+      promise: vite.ssrLoadModule(componentRoute.path.replace("..", "")),
     });
+  });
 
-    // Esperar a que todas las promesas se resuelvan
-    const results = await Promise.all(components.map(c => c.promise));
+  // Esperar a que todas las promesas se resuelvan
+  const results = await Promise.all(components.map((c) => c.promise));
 
-    // Combinar los resultados con sus rutas
-    const componentsToImport = components.map((c, index) => ({
-        route: c.route,  
-        component:{ App: results[index].default} // Asocia el componente resuelto con su ruta
-    }));
+  // Combinar los resultados con sus rutas
+  const componentsToImport = components.map((c, index) => ({
+    route: c.route,
+    component: { App: results[index].default }, // Asocia el componente resuelto con su ruta
+  }));
 
-    return componentsToImport;
+  return componentsToImport;
 }

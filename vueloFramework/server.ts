@@ -9,24 +9,21 @@ export async function start() {
   const vite = await createServer({
     server: { middlewareMode: true },
   });
-  const components = await pagesComponents(vite);
+  const components = {
+    pages: await pagesComponents(vite),
+  };
   Bun.serve({
     async fetch(req) {
       const url = new URL(req.url);
 
       try {
-        // Lee el archivo `index.html`
         let template = readFileSync(resolve("index.html"), "utf-8");
-
-        // resolveer el componente de la ruta
-        const rcomponent = resolveRouteComponent(components,url.pathname)
-
-        // Renderiza la aplicación
+        const rcomponent = resolveRouteComponent(
+          components.pages,
+          url.pathname,
+        );
         const appHtml = await createVueloApp(vite, rcomponent);
-
-        // Inyecta la app renderizada en el template
         const html = template.replace(`<!--app-html-->`, appHtml);
-
         return new Response(html, {
           headers: { "Content-Type": "text/html" },
         });
