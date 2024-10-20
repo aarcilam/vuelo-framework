@@ -1,5 +1,4 @@
 import {
-  createApp,
   createSSRApp,
   defineComponent,
 } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";
@@ -22,14 +21,11 @@ export function hydrateComponents() {
         if (!response.ok) throw new Error("Network response was not ok");
 
         const componenteToHydrate = await response.json();
-        console.log(componenteToHydrate);
 
         // Define el componente a partir del código recibido
         const dynamicComponent = defineComponent({
           template: componenteToHydrate.template,
-          setup() {
-            eval(componenteToHydrate.script);
-          },
+          ...eval(`(${componenteToHydrate.script.replace('export default ', '')})`),
         });
 
         // Crea una nueva instancia de la aplicación

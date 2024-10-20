@@ -5,11 +5,11 @@ export async function compileVueComponent(source: any) {
   const parced = parse(source);
   console.log(source, parced);
 
-  if (!parced.descriptor.scriptSetup) {
+  if (!parced.descriptor.script) {
     throw new Error("No script found in the component");
   }
 
-  const scriptContent = parced.descriptor.scriptSetup.content;
+  const scriptContent = parced.descriptor.script.content;
 
   return {
     template: parced.descriptor.template?.content,
