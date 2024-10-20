@@ -5,6 +5,7 @@ import getTemplate from "../utils/template";
 import type { VueloConfig } from "../interfaces/vueloConfig";
 import fs from "fs"; // Asegúrate de importar el módulo fs para trabajar con el sistema de archivos
 import path from "path"; // Asegúrate de importar el módulo path para manejar rutas
+import { compileVueComponent } from "../utils/compile";
 
 export default function BunServer(
   vite: ViteDevServer,
@@ -34,18 +35,22 @@ export default function BunServer(
           const name = "/api/islands/" + island.name;
           const filePath = path.join(__dirname, "../../", island.path); // Ruta al archivo de la isla
           console.log(url.pathname, island);
-
+      
           if (url.pathname === name) {
             try {
-              // Leer el contenido del archivo
-              const fileContent = await fs.promises.readFile(filePath, "utf-8");
-              return new Response(fileContent, {
-                headers: { "Content-Type": "text/plain" }, // Cambia el Content-Type según sea necesario
-              });
-            } catch (error) {
-              console.error("Error reading file:", error);
-              return new Response("Internal Server Error", { status: 500 });
-            }
+                // Leer el contenido del archivo
+                const fileContent = await fs.promises.readFile(filePath, "utf-8");
+                const compiledComponent = await compileVueComponent(fileContent);
+        
+                return new Response(JSON.stringify(compiledComponent), {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                });
+              } catch (error) {
+                console.error("Error reading file:", error);
+                return new Response("Internal Server Error", { status: 500 });
+              }
           }
         }
         // Si ninguna ruta de isla coincide, puedes retornar un 404 o un mensaje
