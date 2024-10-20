@@ -1,9 +1,6 @@
-import { createVueloApp } from "./createVueloApp";
 import { createServer } from "vite";
 import { getImports, islandsComponents, pagesComponents } from "./autoImport";
-import { resolveRouteComponent } from "./router";
 import { type VueloConfig } from "./interfaces/vueloConfig";
-import getTemplate from "./utils/template";
 import BunServer from "./servers/bun";
 
 export async function vuelo(config: VueloConfig = {
