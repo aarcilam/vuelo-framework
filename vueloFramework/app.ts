@@ -13,5 +13,5 @@ export async function createApp(vite: ViteDevServer, component: any) {
   if (component) {
     app.component("RouteView", component.default);
   }
-  return app;
+  return {app};
 }

@@ -19,6 +19,5 @@ export async function vuelo(config: VueloConfig = {}) {
     islands: await islandsComponents(vite, autoImports.manifest.islands),
   };
   const server = BunServer(vite, finalConfig, components);
-
-  console.log("Vuelo running on " + server.url);
+  return server;
 }

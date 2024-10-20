@@ -58,13 +58,16 @@ export default function BunServer(
         // manejar páginas del frontend
         try {
           let template = getTemplate();
+          template = await vite.transformIndexHtml(url.origin, template)
           const rcomponent = resolveRouteComponent(components.pages, url);
           const appHtml = await createVueloApp(vite, rcomponent);
           let script = `
             <script type="module" src="/vuelo/hydrateClientComponents.js"></script>
           `;
           if (config.mode === "SSR") {
-            script = "";
+            script = `
+            <script type="module" src="/vueloFramework/client.js"></script>
+          `;
           }
 
           const html = template
