@@ -25,7 +25,9 @@ export function hydrateComponents() {
         // Define el componente a partir del código recibido
         const dynamicComponent = defineComponent({
           template: componenteToHydrate.template,
-          ...eval(`(${componenteToHydrate.script.replace('export default ', '')})`),
+          ...eval(
+            `(${componenteToHydrate.script.replace("export default ", "")})`,
+          ),
         });
 
         // Crea una nueva instancia de la aplicación
