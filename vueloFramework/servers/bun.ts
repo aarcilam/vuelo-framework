@@ -35,22 +35,22 @@ export default function BunServer(
           const name = "/api/islands/" + island.name;
           const filePath = path.join(__dirname, "../../", island.path); // Ruta al archivo de la isla
           console.log(url.pathname, island);
-      
+
           if (url.pathname === name) {
             try {
-                // Leer el contenido del archivo
-                const fileContent = await fs.promises.readFile(filePath, "utf-8");
-                const compiledComponent = await compileVueComponent(fileContent);
-        
-                return new Response(JSON.stringify(compiledComponent), {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                });
-              } catch (error) {
-                console.error("Error reading file:", error);
-                return new Response("Internal Server Error", { status: 500 });
-              }
+              // Leer el contenido del archivo
+              const fileContent = await fs.promises.readFile(filePath, "utf-8");
+              const compiledComponent = await compileVueComponent(fileContent);
+
+              return new Response(JSON.stringify(compiledComponent), {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              });
+            } catch (error) {
+              console.error("Error reading file:", error);
+              return new Response("Internal Server Error", { status: 500 });
+            }
           }
         }
         // Si ninguna ruta de isla coincide, puedes retornar un 404 o un mensaje
