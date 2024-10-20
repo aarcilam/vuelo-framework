@@ -15,9 +15,9 @@ export default function BunServer(
   return Bun.serve({
     async fetch(req) {
       const url = new URL(req.url);
-      // Servir hydrateClient.js de forma estática
-      if (url.pathname === "/vuelo/hydrateClient.js") {
-        const filePath = path.join(__dirname, "../hydrateClient.js"); // Ajusta la ruta al archivo
+      // Servir hydrateClientComponents.js de forma estática
+      if (url.pathname === "/vuelo/hydrateClientComponents.js") {
+        const filePath = path.join(__dirname, "../hydrateClientComponents.js"); // Ajusta la ruta al archivo
         try {
           // Leer el archivo de forma asíncrona
           const fileContent = await fs.promises.readFile(filePath, "utf-8");
@@ -25,7 +25,7 @@ export default function BunServer(
             headers: { "Content-Type": "application/javascript" }, // Especifica el tipo MIME para JavaScript
           });
         } catch (error) {
-          console.error("Error reading hydrateClient.js:", error);
+          console.error("Error reading hydrateClientComponents.js:", error);
           return new Response("Internal Server Error", { status: 500 });
         }
       }
@@ -34,7 +34,6 @@ export default function BunServer(
         for (const island of components.islands) {
           const name = "/api/islands/" + island.name;
           const filePath = path.join(__dirname, "../../", island.path); // Ruta al archivo de la isla
-          console.log(url.pathname, island);
 
           if (url.pathname === name) {
             try {
@@ -61,12 +60,17 @@ export default function BunServer(
           let template = getTemplate();
           const rcomponent = resolveRouteComponent(components.pages, url);
           const appHtml = await createVueloApp(vite, rcomponent);
-          const script = `
-            <script type="module" src="/vuelo/hydrateClient.js"></script>
+          let script = `
+            <script type="module" src="/vuelo/hydrateClientComponents.js"></script>
           `;
+          if (config.mode === "SSR") {
+            script = "";
+          }
+
           const html = template
             .replace(`<!--vuelo-app-html-->`, appHtml)
             .replace(`</body>`, `${script}</body>`);
+
           return new Response(html, {
             headers: { "Content-Type": "text/html" },
           });
