@@ -13,6 +13,40 @@ Esta guía explica cómo publicar `vuelo-framework` como un paquete npm para que
 
 3. **Verificar nombre del paquete**: Asegúrate de que el nombre `vuelo-framework` esté disponible en npm. Si no lo está, cambia el nombre en `package.json`.
 
+4. **Configurar Autenticación de Dos Factores (2FA)**: NPM requiere 2FA o un token de acceso granular para publicar paquetes. Tienes dos opciones:
+
+   **Opción A: Habilitar 2FA en tu cuenta de NPM (Recomendado)**
+   
+   1. Ve a [npmjs.com](https://www.npmjs.com/) e inicia sesión
+   2. Ve a tu perfil → "Access Tokens" o directamente a: https://www.npmjs.com/settings/[tu-usuario]/tokens
+   3. Haz clic en "Enable 2FA" o "Configure 2FA"
+   4. Sigue las instrucciones para configurar 2FA usando una app como Google Authenticator o Authy
+   5. Una vez configurado, vuelve a hacer login:
+      ```bash
+      npm login
+      ```
+      Te pedirá el código de 2FA cuando sea necesario.
+
+   **Opción B: Crear un Token de Acceso Granular (Alternativa)**
+   
+   1. Ve a https://www.npmjs.com/settings/[tu-usuario]/tokens
+   2. Haz clic en "Generate New Token" → "Granular Access Token"
+   3. Configura el token:
+      - **Token name**: `vuelo-framework-publish` (o el nombre que prefieras)
+      - **Expiration**: Elige una fecha de expiración
+      - **Type**: Selecciona "Automation" o "Publish"
+      - **Packages**: Selecciona "All packages" o el paquete específico
+      - **Permissions**: Marca "Read and write" para publicación
+   4. Copia el token generado (solo se muestra una vez)
+   5. Configura el token en tu terminal:
+      ```bash
+      npm config set //registry.npmjs.org/:_authToken TU_TOKEN_AQUI
+      ```
+      O crea/edita el archivo `~/.npmrc` y agrega:
+      ```
+      //registry.npmjs.org/:_authToken=TU_TOKEN_AQUI
+      ```
+
 ## Pasos para Publicar
 
 ### 1. Preparar el Proyecto
@@ -178,17 +212,39 @@ bun run index.ts
 
 ## Troubleshooting
 
+### Error: "Two-factor authentication or granular access token required"
+Este es el error más común al intentar publicar. NPM requiere 2FA para publicar paquetes por seguridad.
+
+**Solución rápida:**
+1. Ve a https://www.npmjs.com/settings/[tu-usuario]/tokens
+2. Habilita 2FA siguiendo las instrucciones
+3. O crea un token granular con permisos de publicación (ver sección de Prerrequisitos)
+4. Vuelve a intentar `npm publish`
+
+**Si usas un token:**
+```bash
+# Verifica que el token esté configurado
+npm config get //registry.npmjs.org/:_authToken
+
+# Si no está configurado, configúralo
+npm config set //registry.npmjs.org/:_authToken TU_TOKEN
+```
+
 ### Error: "Package name already exists"
 - El nombre ya está tomado. Cambia el nombre en `package.json`.
+- Puedes usar un scope: `@tu-usuario/vuelo-framework`
 
 ### Error: "You must verify your email"
 - Verifica tu email en npmjs.com antes de publicar.
+- Revisa tu bandeja de entrada (y spam) para el email de verificación.
 
 ### Error: "Insufficient permissions"
 - Asegúrate de estar logueado con `npm login`.
 - Si el paquete ya existe, necesitas ser el propietario o colaborador.
+- Verifica que tu token tenga los permisos correctos.
 
 ### El paquete se publica pero no funciona
 - Verifica que los archivos en `files` existan.
 - Verifica que los `exports` en `package.json` sean correctos.
 - Asegúrate de que las rutas de importación sean correctas.
+- Prueba instalarlo en un proyecto nuevo: `npm install vuelo-framework`
