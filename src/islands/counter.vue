@@ -9,17 +9,13 @@
     </div>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            count: 0 // Definimos el estado aquí
-        }
-    },
-    methods: {
-        increment() {
-            this.count++; // Método para incrementar el contador
-        }
-    }
-}
+<script setup>
+import { ref } from 'vue';
+
+// Usando Composition API con script setup
+const count = ref(0);
+
+const increment = () => {
+    count.value++;
+};
 </script>

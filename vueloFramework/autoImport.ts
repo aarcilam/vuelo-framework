@@ -2,9 +2,11 @@ import { readdir } from "fs/promises";
 import path from "path";
 
 export async function getImports() {
-  const pagesDir = path.resolve("src/pages");
-  const islandsDir = path.resolve("src/islands");
-  const componentsDir = path.resolve("src/components");
+  // Asegurarse de resolver desde el directorio del proyecto (cwd)
+  const projectRoot = process.cwd();
+  const pagesDir = path.resolve(projectRoot, "src/pages");
+  const islandsDir = path.resolve(projectRoot, "src/islands");
+  const componentsDir = path.resolve(projectRoot, "src/components");
 
   const pages = await getFilesIfExists(pagesDir, ".vue");
   const islands = await getFilesIfExists(islandsDir, ".vue");
@@ -94,11 +96,22 @@ function generateImportMap(
     }),
     islands: islands.map((island) => {
       const name = path.basename(island, ".vue");
-      const relativePath = path.relative(__dirname, island).replace("..", "");
+      // island ya debería ser una ruta absoluta (viene de path.resolve + path.join)
+      // Pero por si acaso, asegurémonos de que sea absoluta
+      let absolutePath = island;
+      
+      if (!path.isAbsolute(island)) {
+        absolutePath = path.resolve(island);
+      }
+      // Si por alguna razón la ruta empieza con /src/ (ruta absoluta incorrecta),
+      // corregirla resolviéndola desde el directorio del proyecto
+      if (absolutePath.startsWith("/src/")) {
+        absolutePath = path.resolve(process.cwd(), absolutePath.slice(1));
+      }
 
       return {
         name,
-        path: relativePath, // Aquí se usa la ruta relativa
+        path: absolutePath, // Usar la ruta absoluta
       };
     }),
     components: components.map((component) =>

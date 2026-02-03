@@ -15,6 +15,31 @@ export default function BunServer(
   return Bun.serve({
     async fetch(req) {
       const url = new URL(req.url);
+      
+      // Manejar requests de /@fs/ para imports de archivos del sistema
+      if (url.pathname.startsWith("/@fs/")) {
+        try {
+          const filePath = url.pathname.replace("/@fs/", "");
+          
+          // Si es un archivo Vue, compilarlo usando nuestra función
+          if (filePath.endsWith(".vue")) {
+            const compiledCode = await compileVueComponent(vite, filePath);
+            return new Response(compiledCode, {
+              headers: { "Content-Type": "application/javascript" },
+            });
+          }
+          
+          // Para otros archivos, leer y servir directamente
+          const fileContent = await fs.promises.readFile(filePath, "utf-8");
+          return new Response(fileContent, {
+            headers: { "Content-Type": "application/javascript" },
+          });
+        } catch (error) {
+          console.error("Error serving /@fs/ file:", error);
+          return new Response("Not Found", { status: 404 });
+        }
+      }
+      
       // Servir hydrateClientComponents.js de forma estática
       if (url.pathname === "/vuelo/hydrateClientComponents.js") {
         const filePath = path.join(__dirname, "../hydrateClientComponents.js"); // Ajusta la ruta al archivo
@@ -29,25 +54,40 @@ export default function BunServer(
           return new Response("Internal Server Error", { status: 500 });
         }
       }
-      // manejar rutas de islas
+      // manejar rutas de islas - servir componentes compilados como módulos ES
       if (url.pathname.startsWith("/api/islands/")) {
         for (const island of components.islands) {
-          const name = "/api/islands/" + island.name;
-          const filePath = path.join(__dirname, "../../", island.path); // Ruta al archivo de la isla
+          const name = "/api/islands/" + island.name.toLowerCase();
+          // Resolver la ruta correctamente
+          let absolutePath = island.path;
+          
+          // Si la ruta empieza con /src/, es una ruta absoluta incorrecta
+          // Necesitamos resolverla desde el directorio del proyecto
+          if (absolutePath.startsWith("/src/")) {
+            absolutePath = path.resolve(process.cwd(), absolutePath.slice(1));
+          } else if (!path.isAbsolute(absolutePath)) {
+            // Si es relativa, resolverla desde el directorio del proyecto
+            absolutePath = path.resolve(process.cwd(), absolutePath);
+          }
 
           if (url.pathname === name) {
             try {
-              // Leer el contenido del archivo
-              const fileContent = await fs.promises.readFile(filePath, "utf-8");
-              const compiledComponent = await compileVueComponent(fileContent);
+              // Verificar que el archivo existe
+              if (!fs.existsSync(absolutePath)) {
+                console.error(`File not found: ${absolutePath} (original: ${island.path})`);
+                return new Response("Component file not found", { status: 404 });
+              }
+              
+              // Compilar el componente usando Vite
+              const compiledCode = await compileVueComponent(vite, absolutePath);
 
-              return new Response(JSON.stringify(compiledComponent), {
+              return new Response(compiledCode, {
                 headers: {
-                  "Content-Type": "application/json",
+                  "Content-Type": "application/javascript",
                 },
               });
             } catch (error) {
-              console.error("Error reading file:", error);
+              console.error("Error compiling component:", error);
               return new Response("Internal Server Error", { status: 500 });
             }
           }
