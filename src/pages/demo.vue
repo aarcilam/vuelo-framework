@@ -92,6 +92,19 @@
         </div>
       </div>
 
+      <!-- Sección: Librerías Externas -->
+      <div class="mb-16">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+          Librerías Externas (Chart.js)
+        </h2>
+        <p class="text-center text-gray-600 mb-8">
+          Este componente demuestra el uso de librerías externas. Chart.js se carga automáticamente desde CDN.
+        </p>
+        <div class="max-w-4xl mx-auto">
+          <ChartExample data-hydrate="ChartExample" data-hydrate-event="load"></ChartExample>
+        </div>
+      </div>
+
       <!-- Sección: Componentes Estáticos -->
       <div class="mb-16">
         <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">
@@ -130,6 +143,7 @@ import TodoList from '../islands/TodoList.vue';
 import ToggleTheme from '../islands/ToggleTheme.vue';
 import ImageCarousel from '../islands/ImageCarousel.vue';
 import ProductCard from '../islands/ProductCard.vue';
+import ChartExample from '../islands/ChartExample.vue';
 </script>
 
 <style>

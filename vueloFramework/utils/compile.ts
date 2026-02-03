@@ -2,6 +2,28 @@ import type { ViteDevServer } from "vite";
 import fs from "fs";
 import path from "path";
 
+// Función auxiliar para detectar si un import es de un paquete npm
+function isNpmPackage(importPath: string): boolean {
+  // No es un import relativo (./ o ../)
+  if (importPath.startsWith('./') || importPath.startsWith('../')) {
+    return false;
+  }
+  // No es una URL (http://, https://, //)
+  if (importPath.startsWith('http://') || importPath.startsWith('https://') || importPath.startsWith('//')) {
+    return false;
+  }
+  // No es un path absoluto que empiece con /
+  if (importPath.startsWith('/')) {
+    return false;
+  }
+  // No es vue (ya lo manejamos por separado)
+  if (importPath === 'vue') {
+    return false;
+  }
+  // Es probablemente un paquete npm si no tiene extensión y no es relativo
+  return true;
+}
+
 // Función para compilar un componente Vue usando Vite para el cliente
 export async function compileVueComponent(
   vite: ViteDevServer,
@@ -53,25 +75,113 @@ export async function compileVueComponent(
     'from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js"'
   );
   
+  // IMPORTANTE: Manejar imports desde .vite/deps/ PRIMERO (en cualquier formato)
+  // Esto es crítico porque Vite puede resolver imports a .vite/deps/ durante transformRequest
+  // y convertirlos a URLs que apuntan a .vite/deps/
+  
+  // 1. Manejar imports que ya son URLs pero apuntan a .vite/deps/ (cuando transformRequest los resuelve)
+  // Patrón: from "https://esm.sh/.vite/deps/chart__js.js?v=..."
+  // Este debe ejecutarse PRIMERO porque ya es una URL y podría no ser capturado por otros patrones
+  code = code.replace(
+    /from\s+['"]https:\/\/esm\.sh\/\.vite\/deps\/([^'"]+)\.js[^'"]*['"]/g,
+    (match, libName) => {
+      // Convertir chart__js -> chart.js (Vite reemplaza puntos con doble guion bajo)
+      const packageName = libName.replace(/__/g, '.');
+      return `from "https://esm.sh/${packageName}"`;
+    }
+  );
+  
+  // 2. Manejar imports desde node_modules/.vite/deps/ (dependencias optimizadas)
+  // Vite usa nombres como "chart__js.js" (con doble guion bajo) para paquetes con puntos
+  code = code.replace(
+    /from\s+['"]\/node_modules\/\.vite\/deps\/([^'"]+)\.js[^'"]*['"]/g,
+    (match, libName) => {
+      // Convertir chart__js.js -> chart.js
+      const packageName = libName.replace(/__/g, '.');
+      return `from "https://esm.sh/${packageName}"`;
+    }
+  );
+  
+  // 3. También manejar otros patrones de URLs con .vite/deps/
+  code = code.replace(
+    /from\s+['"]https:\/\/esm\.sh\/node_modules\/\.vite\/deps\/([^'"]+)\.js[^'"]*['"]/g,
+    (match, libName) => {
+      const packageName = libName.replace(/__/g, '.');
+      return `from "https://esm.sh/${packageName}"`;
+    }
+  );
+  
+  // 4. Manejar imports de librerías externas de node_modules (rutas completas)
+  // Convertir imports de node_modules a CDN (esm.sh) para que funcionen en el navegador
+  code = code.replace(
+    /from\s+['"]\/node_modules\/([^'"]+)['"]/g,
+    (match, libPath) => {
+      // Extraer el nombre del paquete y la ruta
+      const parts = libPath.split('/');
+      const packageName = parts[0];
+      
+      // Si hay una ruta específica (ej: /node_modules/lodash-es/debounce.js)
+      if (parts.length > 1) {
+        const subPath = parts.slice(1).join('/');
+        return `from "https://esm.sh/${packageName}/${subPath}"`;
+      } else {
+        // Solo el nombre del paquete (ej: /node_modules/lodash-es)
+        return `from "https://esm.sh/${packageName}"`;
+      }
+    }
+  );
+  
+  // Convertir imports directos de paquetes npm a CDN (esm.sh)
+  // Esto permite que cualquier librería funcione automáticamente en islas
+  // Patrón: import { x } from 'package-name' o import x from 'package-name'
+  // IMPORTANTE: Esto debe ejecutarse DESPUÉS de reemplazar Vue para no afectar imports ya convertidos
+  code = code.replace(
+    /from\s+['"]([^'"]+)['"]/g,
+    (match, importPath) => {
+      // Si ya es una URL (http://, https://, //), no hacer nada
+      if (importPath.startsWith('http://') || importPath.startsWith('https://') || importPath.startsWith('//')) {
+        return match;
+      }
+      // Si es un paquete npm, convertirlo a esm.sh
+      if (isNpmPackage(importPath)) {
+        // Extraer el nombre del paquete (puede tener sub-rutas como 'chart.js/auto')
+        const parts = importPath.split('/');
+        const packageName = parts[0];
+        
+        // Si tiene sub-rutas (ej: 'chart.js/auto' o '@scope/package/sub')
+        if (parts.length > 1) {
+          const subPath = parts.slice(1).join('/');
+          return `from "https://esm.sh/${packageName}/${subPath}"`;
+        } else {
+          return `from "https://esm.sh/${packageName}"`;
+        }
+      }
+      // Si no es un paquete npm, mantener el import original
+      return match;
+    }
+  );
+  
   // Verificar si el código usa funciones de Vue pero no tiene imports válidos
-  // Si usa ref, reactive, etc. sin import, necesitamos agregarlo
-  const usesRef = /\bref\s*\(/.test(code);
-  const hasValidVueImport = /import\s+.*\{[^}]*ref[^}]*\}\s+from\s+['"]https:\/\/unpkg\.com\/vue@3\/dist\/vue\.esm-browser\.prod\.js['"]/.test(code) ||
+  // Detectar todas las funciones de Vue que se están usando
+  const vueImports = [];
+  if (/\bref\s*\(/.test(code)) vueImports.push('ref');
+  if (/\breactive\s*\(/.test(code)) vueImports.push('reactive');
+  if (/\bcomputed\s*\(/.test(code)) vueImports.push('computed');
+  if (/\bwatch\s*\(/.test(code)) vueImports.push('watch');
+  if (/\bonMounted\s*\(/.test(code)) vueImports.push('onMounted');
+  if (/\bonUnmounted\s*\(/.test(code)) vueImports.push('onUnmounted');
+  if (/\bonUpdated\s*\(/.test(code)) vueImports.push('onUpdated');
+  if (/\bnextTick\s*\(/.test(code)) vueImports.push('nextTick');
+  
+  // Verificar si ya hay un import válido de Vue
+  const hasValidVueImport = /import\s+.*\{[^}]*\b(ref|reactive|computed|watch|onMounted|onUnmounted|onUpdated|nextTick)\b[^}]*\}\s+from\s+['"]https:\/\/unpkg\.com\/vue@3\/dist\/vue\.esm-browser\.prod\.js['"]/.test(code) ||
                              /import\s+\*\s+as\s+Vue\s+from\s+['"]https:\/\/unpkg\.com\/vue@3\/dist\/vue\.esm-browser\.prod\.js['"]/.test(code);
   
-  if (usesRef && !hasValidVueImport) {
-    // Agregar import de ref y otras funciones comunes de Vue al inicio
-    // Primero, encontrar qué funciones de Vue se están usando
-    const vueImports = [];
-    if (/\bref\s*\(/.test(code)) vueImports.push('ref');
-    if (/\breactive\s*\(/.test(code)) vueImports.push('reactive');
-    if (/\bcomputed\s*\(/.test(code)) vueImports.push('computed');
-    if (/\bwatch\s*\(/.test(code)) vueImports.push('watch');
-    
-    // Agregar el import al inicio del código
-    if (vueImports.length > 0) {
-      code = `import { ${vueImports.join(', ')} } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";\n${code}`;
-    }
+  // Si se usan funciones de Vue pero no hay import válido, agregarlo
+  if (vueImports.length > 0 && !hasValidVueImport) {
+    // Eliminar imports duplicados
+    const uniqueImports = [...new Set(vueImports)];
+    code = `import { ${uniqueImports.join(', ')} } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";\n${code}`;
   }
   
   // Reemplazar imports relativos con rutas absolutas usando /@fs/
