@@ -126,9 +126,24 @@ export function hydrateComponents() {
           console.warn(`[WARN] Component ${componentName} doesn't have render, setup, or template`);
         }
 
+        // Extraer props de atributos data-*
+        const props = {};
+        for (let i = 0; i < element.attributes.length; i++) {
+          const attr = element.attributes[i];
+          if (attr.name.startsWith('data-prop-')) {
+            const propName = attr.name.replace('data-prop-', '');
+            try {
+              // Intentar parsear como JSON, si falla usar el valor directo
+              props[propName] = JSON.parse(attr.value);
+            } catch (e) {
+              props[propName] = attr.value;
+            }
+          }
+        }
+
         // Crea una nueva instancia de la aplicación Vue para el cliente
         // Usar createApp en lugar de createSSRApp para el cliente
-        const app = createApp(Component);
+        const app = createApp(Component, props);
 
         // Limpiar el contenido del elemento antes de montar
         // Esto asegura que Vue tenga control completo
