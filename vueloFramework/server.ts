@@ -2,6 +2,7 @@ import { createServer } from "vite";
 import { getImports, islandsComponents, pagesComponents } from "./autoImport";
 import { type VueloConfig } from "./interfaces/vueloConfig";
 import BunServer from "./servers/bun";
+import path from "path";
 
 export async function vuelo(config: VueloConfig = {}) {
   const defaultConfig: VueloConfig = {
@@ -10,7 +11,13 @@ export async function vuelo(config: VueloConfig = {}) {
     mode: "SSR",
   };
   const finalConfig = { ...defaultConfig, ...config };
+  
+  // Asegurar que Vite use el root del proyecto del usuario, no del paquete
+  // Esto es crítico cuando el paquete está instalado en node_modules
+  const projectRoot = process.cwd();
+  
   const vite = await createServer({
+    root: projectRoot, // Especificar explícitamente el root del proyecto
     server: { middlewareMode: true },
   });
   const autoImports = await getImports();

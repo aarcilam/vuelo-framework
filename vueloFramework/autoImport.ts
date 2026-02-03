@@ -85,12 +85,16 @@ function generateImportMap(
       route = route.endsWith("/") ? route.slice(0, -1) : route; // Eliminar barra final si existe
       route = `/${route}`; // Asegurar que empiece con '/'
 
-      // Calcular la ruta relativa al directorio actual
-      const relativePath = path.relative(__dirname, page);
+      // Usar la ruta absoluta directamente (page ya es absoluta desde path.resolve)
+      // Esto funciona tanto en desarrollo como cuando el paquete está en node_modules
+      let absolutePath = page;
+      if (!path.isAbsolute(absolutePath)) {
+        absolutePath = path.resolve(process.cwd(), absolutePath);
+      }
 
       return {
         name,
-        path: relativePath, // Aquí se usa la ruta relativa
+        path: absolutePath, // Usar la ruta absoluta
         route,
       };
     }),
@@ -132,9 +136,19 @@ export async function pagesComponents(vite: any, pages: any[]) {
 
   // Recopilar todas las promesas de los componentes junto con su ruta
   routes.forEach((componentRoute) => {
+    // Asegurarse de que la ruta sea absoluta
+    let modulePath = componentRoute.path;
+    if (!path.isAbsolute(modulePath)) {
+      modulePath = path.resolve(process.cwd(), modulePath);
+    }
+    
+    // Vite puede resolver rutas absolutas usando el formato /@fs/
+    // Esto funciona tanto en desarrollo como cuando el paquete está en node_modules
+    const viteModulePath = `/@fs/${modulePath}`;
+    
     components.push({
       route: componentRoute,
-      promise: vite.ssrLoadModule(componentRoute.path.replace("..", "")),
+      promise: vite.ssrLoadModule(viteModulePath),
     });
   });
 
