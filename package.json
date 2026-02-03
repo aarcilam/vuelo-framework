@@ -1,6 +1,6 @@
 {
   "name": "vuelo-framework",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Framework Vue.js con SSR e Islands Architecture",
   "type": "module",
   "main": "./vueloFramework/server.ts",
