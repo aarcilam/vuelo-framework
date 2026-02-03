@@ -62,19 +62,63 @@ Aquí tienes ejemplos de uso:
 <Counter data-hydrate="Counter" data-hydrate-event="mouseover"></Counter>
 ```
 
-## Instalación de Dependencias
+## Instalación como Paquete NPM
 
-Para que tu aventura de codificación despegue sin problemas, primero instala las
-dependencias.
+Para usar Vuelo Framework en tu proyecto, instálalo con tu gestor de paquetes preferido:
+
+```bash
+# Con npm
+npm install vuelo-framework
+
+# Con yarn
+yarn add vuelo-framework
+
+# Con pnpm
+pnpm add vuelo-framework
+
+# Con bun
+bun add vuelo-framework
+```
+
+## Uso Rápido
+
+Después de instalar, crea un archivo `index.ts` en la raíz de tu proyecto:
+
+```typescript
+import { vuelo } from "vuelo-framework";
+
+const vueloServer = await vuelo({
+  mode: 'SSRIslands',
+  port: 3000
+});
+
+console.log("Vuelo running on " + vueloServer.url);
+```
+
+Y crea la estructura de carpetas:
+
+```
+tu-proyecto/
+├── index.ts
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+└── src/
+    ├── pages/        # Tus páginas aquí
+    │   └── index.vue
+    └── islands/      # Componentes interactivos aquí
+        └── counter.vue
+```
+
+## Desarrollo Local
+
+Si estás desarrollando el framework mismo, instala las dependencias:
 
 ```bash
 bun install
 ```
 
-## Para Ejecutar
-
-Una vez que tus dependencias estén listas, es hora de tomar el control de la
-cabina y ejecutar el comando para iniciar tu viaje.
+Y ejecuta el proyecto de ejemplo:
 
 ```bash
 bun run index.ts

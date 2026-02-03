@@ -1,17 +1,37 @@
 {
   "name": "vuelo-framework",
-  "module": "index.ts",
+  "version": "1.0.0",
+  "description": "Framework Vue.js con SSR e Islands Architecture",
   "type": "module",
-  "scripts": {
-    "dev": "bun run --watch index.ts",
-    "start": "bun run index.ts",
-    "build": "bun vite build"
+  "main": "./vueloFramework/server.ts",
+  "types": "./vueloFramework/server.ts",
+  "exports": {
+    ".": {
+      "import": "./vueloFramework/server.ts",
+      "types": "./vueloFramework/server.ts"
+    },
+    "./defaults/*": "./vueloFramework/defaults/*"
   },
-  "devDependencies": {
-    "@types/bun": "latest"
+  "files": [
+    "vueloFramework/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "vue",
+    "ssr",
+    "islands",
+    "framework",
+    "vite"
+  ],
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "prepublishOnly": "echo 'Asegúrate de haber compilado el proyecto antes de publicar'"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vue": "^3.5.0"
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
@@ -20,5 +40,8 @@
     "postcss": "^8.4.47",
     "vite": "^5.4.9",
     "vue": "^3.5.12"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
   }
 }

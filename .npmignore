@@ -1,0 +1,45 @@
+# Archivos de desarrollo
+node_modules/
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Archivos de usuario (no deben estar en el paquete)
+src/
+index.ts
+vite.config.ts
+tsconfig.json
+postcss.config.cjs
+
+# Archivos de desarrollo
+.git/
+.gitignore
+.env
+.env.local
+*.log
+
+# Archivos de build del usuario
+dist/
+.vite/
+build/
+
+# Archivos del IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de prueba (si los tienes)
+test/
+tests/
+__tests__/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
