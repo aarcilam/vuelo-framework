@@ -7,20 +7,22 @@ export async function compileVueComponent(
   vite: ViteDevServer,
   filePath: string,
 ): Promise<string> {
-  // Leer el contenido del archivo
-  const fileContent = await fs.promises.readFile(filePath, "utf-8");
-  
-  // Usar el pluginContainer de Vite para transformar el componente SFC
-  // Esto transforma <script setup> y otros a código JavaScript válido
-  // Necesitamos usar la URL del módulo en formato Vite
+  // Usar transformRequest en lugar de pluginContainer.transform
+  // transformRequest maneja mejor la optimización de dependencias y evita errores ERR_OUTDATED_OPTIMIZED_DEP
   const moduleId = `/@fs/${filePath}`;
   
-  // Primero resolver el ID del módulo
-  const resolved = await vite.pluginContainer.resolveId(moduleId);
-  const id = resolved?.id || moduleId;
-  
-  // Transformar el código usando el pluginContainer
-  const result = await vite.pluginContainer.transform(fileContent, id, { ssr: false });
+  // Usar transformRequest que maneja automáticamente la optimización de dependencias
+  // y evita el error ERR_OUTDATED_OPTIMIZED_DEP
+  let result;
+  try {
+    result = await vite.transformRequest(moduleId, { ssr: false });
+  } catch (error: any) {
+    // Si transformRequest falla, intentar con pluginContainer como fallback
+    const fileContent = await fs.promises.readFile(filePath, "utf-8");
+    const resolved = await vite.pluginContainer.resolveId(moduleId);
+    const id = resolved?.id || moduleId;
+    result = await vite.pluginContainer.transform(fileContent, id, { ssr: false });
+  }
   
   if (!result || !result.code) {
     throw new Error(`Failed to transform component at ${filePath}`);

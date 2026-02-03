@@ -164,6 +164,92 @@ export async function pagesComponents(vite: any, pages: any[]) {
   return componentsToImport;
 }
 
+import { compileVueComponent } from "./utils/compile";
+
 export async function islandsComponents(vite: any, islands: any) {
-  return islands;
+  console.log(`[INFO] Pre-compilando ${islands.length} islas...`);
+  
+  // Nota: La optimización de dependencias ya se hizo en server.ts
+  // Aquí solo esperamos un momento adicional para asegurar que todo esté listo
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Pre-compilar todos los componentes de islas de forma secuencial
+  // para evitar conflictos con la optimización de dependencias
+  const compiledIslands = [];
+  
+  for (const island of islands) {
+    try {
+      // Resolver la ruta absoluta
+      let absolutePath = island.path;
+      if (!path.isAbsolute(absolutePath)) {
+        absolutePath = path.resolve(process.cwd(), absolutePath);
+      }
+      if (absolutePath.startsWith("/src/")) {
+        absolutePath = path.resolve(process.cwd(), absolutePath.slice(1));
+      }
+
+      // Compilar el componente una vez al inicio
+      console.log(`[INFO] Pre-compilando isla: ${island.name} desde ${absolutePath}`);
+      
+      // Intentar compilar con reintentos
+      let compiledCode = null;
+      let retries = 3;
+      
+      while (retries > 0 && !compiledCode) {
+        try {
+          compiledCode = await compileVueComponent(vite, absolutePath);
+        } catch (error: any) {
+          const errorCode = error?.code || '';
+          const errorMessage = error?.message || '';
+          
+          // Si es un error de dependencias desactualizadas, esperar y reintentar
+          if (
+            errorCode === 'ERR_OUTDATED_OPTIMIZED_DEP' || 
+            errorMessage.includes('pre-bundle') ||
+            errorMessage.includes('new version of the pre-bundle') ||
+            errorCode === 'ERR_OPTIMIZE_DEPS_PROCESSING_ERROR'
+          ) {
+            retries--;
+            if (retries > 0) {
+              const waitTime = 3000;
+              console.log(`[WARN] Dependencias desactualizadas para ${island.name}, esperando ${waitTime}ms antes de reintentar... (${retries} intentos restantes)`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              
+              // Intentar forzar la re-optimización
+              try {
+                await vite.transformRequest("vue", { ssr: false }).catch(() => {});
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              } catch (e) {
+                // Ignorar
+              }
+              continue;
+            }
+          }
+          throw error;
+        }
+      }
+      
+      if (compiledCode) {
+        compiledIslands.push({
+          ...island,
+          compiledCode, // Almacenar el código compilado
+        });
+      } else {
+        throw new Error(`No se pudo compilar después de múltiples intentos`);
+      }
+    } catch (error) {
+      console.error(`[ERROR] Error pre-compilando isla ${island.name}:`, error);
+      // Retornar el island sin código compilado, se intentará compilar bajo demanda
+      compiledIslands.push({
+        ...island,
+        compiledCode: null,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const successCount = compiledIslands.filter(i => i.compiledCode).length;
+  console.log(`[INFO] Pre-compilación completada: ${successCount}/${islands.length} islas compiladas exitosamente`);
+  
+  return compiledIslands;
 }

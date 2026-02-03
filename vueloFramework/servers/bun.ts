@@ -54,33 +54,46 @@ export default function BunServer(
           return new Response("Internal Server Error", { status: 500 });
         }
       }
-      // manejar rutas de islas - servir componentes compilados como módulos ES
+      // manejar rutas de islas - servir componentes pre-compilados como módulos ES
       if (url.pathname.startsWith("/api/islands/")) {
         for (const island of components.islands) {
           const name = "/api/islands/" + island.name.toLowerCase();
-          // Resolver la ruta correctamente
-          let absolutePath = island.path;
-          
-          // Si la ruta empieza con /src/, es una ruta absoluta incorrecta
-          // Necesitamos resolverla desde el directorio del proyecto
-          if (absolutePath.startsWith("/src/")) {
-            absolutePath = path.resolve(process.cwd(), absolutePath.slice(1));
-          } else if (!path.isAbsolute(absolutePath)) {
-            // Si es relativa, resolverla desde el directorio del proyecto
-            absolutePath = path.resolve(process.cwd(), absolutePath);
-          }
 
           if (url.pathname === name) {
+            // Si el componente ya está pre-compilado, servirlo directamente
+            if (island.compiledCode) {
+              return new Response(island.compiledCode, {
+                headers: {
+                  "Content-Type": "application/javascript",
+                },
+              });
+            }
+            
+            // Si no está pre-compilado (fallback), intentar compilarlo bajo demanda
+            if (island.error) {
+              console.error(`[ERROR] Componente ${island.name} no pudo ser pre-compilado: ${island.error}`);
+              return new Response(`Error: Component could not be compiled. ${island.error}`, { 
+                status: 500,
+                headers: { "Content-Type": "text/plain" }
+              });
+            }
+
+            // Fallback: compilar bajo demanda (no debería llegar aquí normalmente)
             try {
-              // Verificar que el archivo existe
+              let absolutePath = island.path;
+              if (!path.isAbsolute(absolutePath)) {
+                absolutePath = path.resolve(process.cwd(), absolutePath);
+              }
+              if (absolutePath.startsWith("/src/")) {
+                absolutePath = path.resolve(process.cwd(), absolutePath.slice(1));
+              }
+
               if (!fs.existsSync(absolutePath)) {
-                console.error(`File not found: ${absolutePath} (original: ${island.path})`);
+                console.error(`File not found: ${absolutePath}`);
                 return new Response("Component file not found", { status: 404 });
               }
               
-              // Compilar el componente usando Vite
               const compiledCode = await compileVueComponent(vite, absolutePath);
-
               return new Response(compiledCode, {
                 headers: {
                   "Content-Type": "application/javascript",
@@ -92,7 +105,7 @@ export default function BunServer(
             }
           }
         }
-        // Si ninguna ruta de isla coincide, puedes retornar un 404 o un mensaje
+        // Si ninguna ruta de isla coincide, retornar 404
         return new Response("Not Found", { status: 404 });
       } else {
         // manejar páginas del frontend
