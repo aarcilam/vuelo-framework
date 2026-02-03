@@ -141,16 +141,73 @@ export function hydrateComponents() {
           }
         }
 
+        // Guardar las clases y estilos del elemento original para preservarlos
+        const originalClasses = element.className;
+        const originalId = element.id;
+        const originalStyles = element.getAttribute('style') || '';
+        
+        // Limpiar completamente el contenido del elemento antes de montar
+        // Esto asegura que Vue tenga control completo
+        element.innerHTML = '';
+        
+        // Remover atributos de hidratación para evitar conflictos
+        element.removeAttribute('data-hydrate');
+        element.removeAttribute('data-hydrate-event');
+
         // Crea una nueva instancia de la aplicación Vue para el cliente
         // Usar createApp en lugar de createSSRApp para el cliente
         const app = createApp(Component, props);
 
-        // Limpiar el contenido del elemento antes de montar
-        // Esto asegura que Vue tenga control completo
-        element.innerHTML = '';
-
-        // Montar el componente en el elemento
+        // Montar el componente directamente en el elemento
+        // Vue reemplazará el contenido del elemento con el componente
         const instance = app.mount(element);
+        
+        // Después de montar, verificar si hay un doble contenedor
+        // Si el elemento tiene un solo hijo que es un div sin atributos importantes,
+        // extraer su contenido para evitar el doble contenedor
+        if (element.children.length === 1) {
+          const wrapperDiv = element.firstElementChild;
+          if (wrapperDiv && 
+              wrapperDiv.tagName === 'DIV' && 
+              !wrapperDiv.id &&
+              !wrapperDiv.getAttribute('data-hydrate') &&
+              !wrapperDiv.getAttribute('data-hydrate-event')) {
+            // Contar atributos no importantes (solo class y style son aceptables)
+            const importantAttrs = Array.from(wrapperDiv.attributes).filter(attr => 
+              attr.name !== 'class' && attr.name !== 'style'
+            );
+            
+            // Si solo tiene class/style o ningún atributo, podemos aplanarlo
+            if (importantAttrs.length === 0) {
+              // Preservar las clases del wrapper si las tiene
+              if (wrapperDiv.className && !originalClasses) {
+                element.className = wrapperDiv.className;
+              } else if (wrapperDiv.className && originalClasses) {
+                element.className = originalClasses + ' ' + wrapperDiv.className;
+              }
+              
+              // Mover todos los hijos del div wrapper al elemento original
+              const fragment = document.createDocumentFragment();
+              while (wrapperDiv.firstChild) {
+                fragment.appendChild(wrapperDiv.firstChild);
+              }
+              element.removeChild(wrapperDiv);
+              element.appendChild(fragment);
+            }
+          }
+        }
+        
+        // Restaurar clases, id y estilos si es necesario (solo si no se restauraron arriba)
+        if (originalClasses && !element.className.includes(originalClasses)) {
+          element.className = originalClasses + (element.className ? ' ' + element.className : '');
+        }
+        if (originalId) {
+          element.id = originalId;
+        }
+        if (originalStyles) {
+          const currentStyle = element.getAttribute('style') || '';
+          element.setAttribute('style', originalStyles + (currentStyle ? '; ' + currentStyle : ''));
+        }
 
         console.log("hydrated:", componentName);
         console.log(`[DEBUG] Component mounted, instance:`, instance);
